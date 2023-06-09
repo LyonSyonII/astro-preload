@@ -32,3 +32,10 @@ import { Image } from "astro-prefetch";
 <!-- Automatically fetches and downloads image -->
 <Image name="cat.png" url="https://examplecat.com/cat.png" />
 ```
+
+## What does it do?
+At build time, Astro Prefetch downloads the images from the provided urls and saves them to "public/assets/prefetched/".
+
+Can be useful in combination with tools like [astro-compress](https://github.com/astro-community/astro-compress) or to avoid including foreign assets.
+
+> In `development` mode Astro Prefetch will forward the urls directly, to avoid downloading the files multiple times.
