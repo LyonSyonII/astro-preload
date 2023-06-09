@@ -59,7 +59,7 @@ export interface Props extends CommonProps {
     url?: string;
 }
 
-let {name, pack, size, url} = Astro.props;
+let {name, pack, size, url, ...props}: Props = Astro.props;
 if (!pack) {
     const sep = name.indexOf(":");
     if (sep === -1) throw "Invalid icon name, expected format `name=\"<pack>:<name>\"`";
@@ -72,4 +72,4 @@ if (!url) url = `https://api.iconify.design/<pack>/<name>.svg`;
 url = url.replace("<pack>", pack).replace("<name>", name);
 ---
 
-<Image name={`${pack}_${name}.svg`} url={url} size={size} />
+<Image {...props} name={`${pack}_${name}.svg`} url={url} size={size} width={size} height={size} />
