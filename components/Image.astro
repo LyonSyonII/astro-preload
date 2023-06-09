@@ -36,7 +36,7 @@ export interface Props extends CommonProps {
     /** 
      * URL of the image.
      * 
-     * The image will be downloaded at build time and saved into `public/assets/prefetched/<name>`.
+     * The image will be downloaded at build time and saved into `public/assets/preloaded/<name>`.
      * 
      * If in `dev` mode, the image will not be saved.
      * 
@@ -60,12 +60,12 @@ if (!width && !height) {
 if (process.env.NODE_ENV === "production" && !url.startsWith("/")) {
     try {
         const blob = await fetch(url).then(res => res.blob());
-        fs.mkdirSync("public/assets/prefetched", { recursive: true });
-        fs.writeFileSync(`public/assets/prefetched/${name}`, new Uint8Array(await blob.arrayBuffer()));
-        console.log(`[astro-prefetch]: Downloaded image ${name} into public/assets/prefetched/${name}`);
-        url = `assets/prefetched/${name}`;
+        fs.mkdirSync("public/assets/preloaded", { recursive: true });
+        fs.writeFileSync(`public/assets/preloaded/${name}`, new Uint8Array(await blob.arrayBuffer()));
+        console.log(`[astro-preload]: Downloaded image ${name} into public/assets/preloaded/${name}`);
+        url = `assets/preloaded/${name}`;
     } catch {
-        console.log(`[astro-prefetch]: Failed to load image '${name}', fallback to using '${url}'`);
+        console.log(`[astro-preload]: Failed to load image '${name}', fallback to using '${url}'`);
     }
 }
 ---

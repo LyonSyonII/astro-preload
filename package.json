@@ -1,5 +1,5 @@
 {
-  "name": "astro-prefetch",
+  "name": "astro-preload",
   "description": "Download images at build time! Supports Iconify icons and arbitrary images.",
   "version": "1.0.0",
   "type": "module",
@@ -9,7 +9,7 @@
   "files": [
     "components"
   ],
-  "repository": "https://github.com/lyonsyonii/astro-prefetch",
+  "repository": "https://github.com/lyonsyonii/astro-preload",
   "author": {
     "name": "Liam Garriga",
     "email": "liam@garriga.dev",
@@ -24,7 +24,7 @@
     "icon",
     "icons",
     "iconify",
-    "prefetch",
+    "preload",
     "fetch"
   ],
   "devDependencies": {

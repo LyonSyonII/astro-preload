@@ -1,19 +1,26 @@
-# Astro Prefetch
+# Astro Preload
 Easily download images at build time!  
 Supports [Iconify](https://icon-sets.iconify.design/) icons and arbitrary images.
 
+## What does it do?
+At build time, Astro Preload downloads the images from the provided urls and saves them to `public/assets/preloaded/`.
+
+Can be useful in combination with tools like [astro-compress](https://github.com/astro-community/astro-compress) or to avoid including foreign assets.
+
+> In `development` mode Astro Preload will forward the urls directly, to avoid downloading the files multiple times.
+
 ## Install
 ```bash
-npm install -i https://github.com/lyonsyonii/astro-prefetch
+npm install -i https://github.com/lyonsyonii/astro-preload
 #or
-yarn add https://github.com/lyonsyonii/astro-prefetch
+yarn add https://github.com/lyonsyonii/astro-preload
 ```
 
 ## Usage
 Get icon from Iconify:
 ```astro
 ---
-import { Icon } from "astro-prefetch";
+import { Icon } from "astro-preload";
 ---
 <!-- Automatically fetches and downloads Material Design Icon's "github" SVG -->
 <Icon pack="mdi" name="github" />
@@ -27,7 +34,7 @@ Get image from arbitrary URL:
 
 ```astro
 ---
-import { Image } from "astro-prefetch";
+import { Image } from "astro-preload";
 ---
 <!-- Automatically fetches and downloads image -->
 <Image name="cat.png" url="https://examplecat.com/cat.png" />
@@ -48,10 +55,3 @@ The **Image** component accepts the following props:
 - `height`: The height of the image.
 
 Any other props are passed to the wrapped `<img>` tag.
-
-## What does it do?
-At build time, Astro Prefetch downloads the images from the provided urls and saves them to `public/assets/prefetched/`.
-
-Can be useful in combination with tools like [astro-compress](https://github.com/astro-community/astro-compress) or to avoid including foreign assets.
-
-> In `development` mode Astro Prefetch will forward the urls directly, to avoid downloading the files multiple times.
