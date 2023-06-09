@@ -34,13 +34,13 @@ import { Image } from "astro-prefetch";
 ```
 
 ## API
-The Icon component accepts the following props:
+The **Icon** component accepts the following props:
 - `name`: The name of the icon.
 - `pack`: The pack of the icon.
 - `size`: The size of the icon, applied to both `width` and `height`.
 - `url`: The URL of the icon, overrides default Iconify URL.
 
-The Image component accepts the following props:
+The **Image** component accepts the following props:
 - `name`: The name of the image.
 - `url`: The URL of the image.
 - `size`: The size of the image, applied to both `width` and `height`.
