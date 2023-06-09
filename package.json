@@ -1,0 +1,33 @@
+{
+  "name": "astro-prefetch",
+  "description": "Download images at build time! Supports Iconify icons and arbitrary images.",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./components/index.ts"
+  },
+  "files": [
+    "components"
+  ],
+  "repository": "https://github.com/lyonsyonii/astro-prefetch",
+  "author": {
+    "name": "Liam Garriga",
+    "email": "liam@garriga.dev",
+    "url": "https://garriga.dev"
+  },
+  "license": "MIT",
+  "keywords": [
+    "astro",
+    "astro-component",
+    "image",
+    "images",
+    "icon",
+    "icons",
+    "iconify",
+    "prefetch",
+    "fetch"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.2.5"
+  }
+}

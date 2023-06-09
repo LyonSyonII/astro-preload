@@ -1,0 +1,71 @@
+---
+import fs from "fs";
+import { CommonProps } from "./Props";
+
+/**
+ * Props of the Image component.
+ */
+export interface Props extends CommonProps {
+    /** 
+     * Name of the image.
+     * 
+     * This will be the name of the resulting file, so include it with extension if you want to access it later.
+     * 
+     * # Example
+     * 
+     * ```
+     * <Image name="cat.png" url="https://examplecat.com/cat.png" />
+     * ```
+     */
+    name: string;
+    /** 
+     * Size of the image, will be applied to width and height.
+     * @defaultValue 96
+     */
+    size?: number;
+    /**
+     * Width of the image.
+     * @defaultValue 96
+     */
+    width?: number;
+    /**
+     * Height of the image.
+     * @defaultValue 96
+     */
+    height?: number;
+    /** 
+     * URL of the image.
+     * 
+     * The image will be downloaded at build time and saved into `public/assets/prefetched/<name>`.
+     * 
+     * If in `dev` mode, the image will not be saved.
+     * 
+     * # Example
+     * ```
+     * <Image name="cat.png" url="https://examplecat.com/cat.png" width={64} />
+     * ```
+    */
+    url: string;
+}
+
+let { name, size, width, height, url, ...props } = Astro.props;
+if (!size) size = 96;
+if (!width && !height) {
+    width = height = size;
+}
+
+// Download only on production to avoid downloading multiple times
+if (process.env.NODE_ENV === "production") {
+    try {
+        const blob = await fetch(url).then(res => res.blob());
+        fs.mkdirSync("public/assets/prefetched", { recursive: true });
+        fs.writeFileSync(`public/assets/prefetched/${name}`, new Uint8Array(await blob.arrayBuffer()));
+        console.log(`[astro-prefetch]: Downloaded image ${name} into public/assets/prefetched/${name}`);
+        url = `assets/prefetched/${name}`;
+    } catch {
+        console.log(`[astro-prefetch]: Failed to load image '${name}', fallback to using '${url}'`);
+    }
+}
+---
+
+<img src={url} alt="Image could not be loaded" width={width} height={height} />
