@@ -1,5 +1,5 @@
 # Astro Prefetch
-Download images at build time! Supports Iconify icons and arbitrary images.
+Download images at build time! Supports [Iconify](https://icon-sets.iconify.design/) icons and arbitrary images.
 
 ## Install
 ```bash
