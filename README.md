@@ -11,9 +11,9 @@ Can be useful in combination with tools like [astro-compress](https://github.com
 
 ## Install
 ```bash
-npm install -i https://github.com/lyonsyonii/astro-preload
-#or
-yarn add https://github.com/lyonsyonii/astro-preload
+npm install -i astro-preload
+# or
+yarn add astro-preload
 ```
 
 ## Usage
