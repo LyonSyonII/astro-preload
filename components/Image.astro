@@ -40,6 +40,8 @@ export interface Props extends CommonProps {
      * 
      * If in `dev` mode, the image will not be saved.
      * 
+     * If the url is local (starts with '/') nothing will happen.
+     * 
      * # Example
      * ```
      * <Image name="cat.png" url="https://examplecat.com/cat.png" width={64} />
@@ -48,14 +50,14 @@ export interface Props extends CommonProps {
     url: string;
 }
 
-let { name, size, width, height, url, ...props } = Astro.props;
+let { name, size, width, height, url, ...props }: Props = Astro.props;
 if (!size) size = 96;
 if (!width && !height) {
     width = height = size;
 }
 
 // Download only on production to avoid downloading multiple times
-if (process.env.NODE_ENV === "production") {
+if (process.env.NODE_ENV === "production" && !url.startsWith("/")) {
     try {
         const blob = await fetch(url).then(res => res.blob());
         fs.mkdirSync("public/assets/prefetched", { recursive: true });
@@ -68,4 +70,4 @@ if (process.env.NODE_ENV === "production") {
 }
 ---
 
-<img src={url} alt="Image could not be loaded" width={width} height={height} />
+<img {...props} src={url} alt="Image could not be loaded" width={width} height={height} />
