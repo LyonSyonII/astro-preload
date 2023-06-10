@@ -1,11 +1,10 @@
 ---
 import fs from "fs";
-import { CommonProps } from "./Props";
 
 /**
  * Props of the Image component.
  */
-export interface Props extends CommonProps {
+export type Props = Omit<astroHTML.JSX.ImgHTMLAttributes, "src" | "name"> & {
     /** 
      * Name of the image.
      * 
@@ -23,16 +22,6 @@ export interface Props extends CommonProps {
      * @defaultValue 96
      */
     size?: number;
-    /**
-     * Width of the image.
-     * @defaultValue 96
-     */
-    width?: number;
-    /**
-     * Height of the image.
-     * @defaultValue 96
-     */
-    height?: number;
     /** 
      * URL of the image.
      * 
@@ -48,18 +37,20 @@ export interface Props extends CommonProps {
      * ```
     */
     url: string;
+};
+
+let { name, size = 96, url, alt = "Image could not be loaded", ...props }: Props = Astro.props;
+if (!props.width && !props.height) {
+    props.width = props.height = size;
 }
 
-let { name, size, width, height, url, ...props }: Props = Astro.props;
-if (!size) size = 96;
-if (!width && !height) {
-    width = height = size;
-}
 
 // Download only on production to avoid downloading multiple times
 if (process.env.NODE_ENV === "production" && !url.startsWith("/")) {
     try {
-        const blob = await fetch(url).then(res => res.blob());
+        const response = await fetch(url);
+        console.log(response.headers);
+        const blob = await response.blob();
         fs.mkdirSync("public/assets/preloaded", { recursive: true });
         fs.writeFileSync(`public/assets/preloaded/${name}`, new Uint8Array(await blob.arrayBuffer()));
         console.log(`[astro-preload]: Downloaded image ${name} into public/assets/preloaded/${name}`);
@@ -70,4 +61,4 @@ if (process.env.NODE_ENV === "production" && !url.startsWith("/")) {
 }
 ---
 
-<img {...props} src={url} alt="Image could not be loaded" width={width} height={height} />
+<img {...props} src={url} alt={alt}>

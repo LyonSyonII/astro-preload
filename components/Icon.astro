@@ -1,10 +1,9 @@
 ---
 import Image from '../components/Image.astro';
-import { CommonProps } from './Props';
 /**
  * Props of the Icon component.
  */
-export interface Props extends CommonProps {
+export type Props = Omit<astroHTML.JSX.ImgHTMLAttributes, "src" | "name"> & {
     /** 
      * Name of the icon.
      * 
@@ -57,19 +56,19 @@ export interface Props extends CommonProps {
      * ```
     */
     url?: string;
-}
+};
 
-let {name, pack, size, url, ...props}: Props = Astro.props;
+let { name, pack, size = 24, url = `https://api.iconify.design/<pack>/<name>.svg`, ...props } = Astro.props;
 if (!pack) {
     const sep = name.indexOf(":");
     if (sep === -1) throw "Invalid icon name, expected format `name=\"<pack>:<name>\"`";
     pack = name.substring(0, sep)
     name = name.substring(sep+1)    
 }
-if (!size) size = 24;
-if (!url) url = `https://api.iconify.design/<pack>/<name>.svg`;
 
+props.width = props.height = size;
 url = url.replace("<pack>", pack).replace("<name>", name);
+props.alt = props.alt || "Icon could not be loaded";
 ---
 
-<Image {...props} name={`${pack}_${name}.svg`} url={url} size={size} width={size} height={size} />
+<Image {...props} name={`${pack}:${name}`} url={url} />

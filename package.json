@@ -1,7 +1,7 @@
 {
   "name": "astro-preload",
   "description": "Download images at build time! Supports Iconify icons and arbitrary images.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "exports": {
     ".": "./components/index.ts"
@@ -19,6 +19,7 @@
   "keywords": [
     "astro",
     "astro-component",
+    "astro-integration",
     "image",
     "images",
     "icon",
@@ -28,6 +29,7 @@
     "fetch"
   ],
   "devDependencies": {
-    "@types/node": "^20.2.5"
+    "@types/node": "^20.2.5",
+    "astro": "^2.6.2"
   }
 }
