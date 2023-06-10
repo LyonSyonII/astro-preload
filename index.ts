@@ -6,7 +6,7 @@ export {default as Image} from "./components/Image.astro";
 
 const PKG_NAME = "astro-preload";
 
-export default function integration(): AstroIntegration {
+export default function preload(): AstroIntegration {
     return {
         name: PKG_NAME,
         hooks: {

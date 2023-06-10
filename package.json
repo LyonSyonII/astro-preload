@@ -4,7 +4,7 @@
   "version": "1.0.1",
   "type": "module",
   "exports": {
-    ".": "./components/index.ts"
+    ".": "./index.ts"
   },
   "files": [
     "components"
