@@ -5,7 +5,7 @@ Supports [Iconify](https://icon-sets.iconify.design/) icons and arbitrary images
 ## What does it do?
 At build time, Astro Preload downloads the images from the provided urls and saves them to `public/assets/preloaded/`.
 
-Can be useful in combination with tools like [astro-compress](https://github.com/astro-community/astro-compress) or to avoid including foreign assets.
+Can be useful in combination with tools like [astro-compress](https://github.com/astro-community/astro-compress) or to avoid including remote assets at runtime.
 
 > In `development` mode Astro Preload will forward the urls directly, to avoid downloading the files multiple times.
 
