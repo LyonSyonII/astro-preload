@@ -9,6 +9,8 @@ export type Props = Omit<astroHTML.JSX.ImgHTMLAttributes, "src" | "name"> & {
      * Name of the image.
      *
      * This will be the name of the resulting file, so include it with extension if you want to access it later.
+     * 
+     * If not provided astro-preload will try to infer it from the URL.
      *
      * # Example
      *
@@ -16,7 +18,7 @@ export type Props = Omit<astroHTML.JSX.ImgHTMLAttributes, "src" | "name"> & {
      * <Image name="cat.png" url="https://examplecat.com/cat.png" />
      * ```
      */
-    name: string;
+    name?: string;
     /**
      * Size of the image, will be applied to width and height.
      * @defaultValue 96
@@ -40,12 +42,16 @@ export type Props = Omit<astroHTML.JSX.ImgHTMLAttributes, "src" | "name"> & {
 };
 
 let {
-    name,
-    size = 96,
     url,
+    name = new URL(url).pathname.split("/").pop(),
+    size = 96,
     alt = "Image could not be loaded",
     ...props
 }: Props = Astro.props;
+
+if (!name) {
+    throw `[astro-preload] name not provided and cannot be extracted from the url ${url}.\nPlease, provide a name.`;
+}
 
 if (!props.width && !props.height) {
     props.width = props.height = size;
