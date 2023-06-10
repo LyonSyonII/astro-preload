@@ -1,9 +1,6 @@
 import { AstroIntegration } from "astro";
 import fs from "fs/promises";
 
-export {default as Icon} from "./components/Icon.astro";
-export {default as Image} from "./components/Image.astro";
-
 const PKG_NAME = "astro-preload";
 
 export default function preload(): AstroIntegration {

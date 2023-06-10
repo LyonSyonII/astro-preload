@@ -4,10 +4,12 @@
   "version": "1.0.1",
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./components": "./components/index.ts"
   },
   "files": [
-    "components"
+    "components",
+    "index.ts"
   ],
   "repository": "https://github.com/lyonsyonii/astro-preload",
   "author": {
