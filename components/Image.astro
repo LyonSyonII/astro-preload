@@ -5,60 +5,72 @@ import fs from "fs";
  * Props of the Image component.
  */
 export type Props = Omit<astroHTML.JSX.ImgHTMLAttributes, "src" | "name"> & {
-    /** 
+    /**
      * Name of the image.
-     * 
+     *
      * This will be the name of the resulting file, so include it with extension if you want to access it later.
-     * 
+     *
      * # Example
-     * 
+     *
      * ```
      * <Image name="cat.png" url="https://examplecat.com/cat.png" />
      * ```
      */
     name: string;
-    /** 
+    /**
      * Size of the image, will be applied to width and height.
      * @defaultValue 96
      */
     size?: number;
-    /** 
+    /**
      * URL of the image.
-     * 
+     *
      * The image will be downloaded at build time and saved into `public/assets/preloaded/<name>`.
-     * 
+     *
      * If in `dev` mode, the image will not be saved.
-     * 
+     *
      * If the url is local (starts with '/') nothing will happen.
-     * 
+     *
      * # Example
      * ```
      * <Image name="cat.png" url="https://examplecat.com/cat.png" width={64} />
      * ```
-    */
+     */
     url: string;
 };
 
-let { name, size = 96, url, alt = "Image could not be loaded", ...props }: Props = Astro.props;
+let {
+    name,
+    size = 96,
+    url,
+    alt = "Image could not be loaded",
+    ...props
+}: Props = Astro.props;
+
 if (!props.width && !props.height) {
     props.width = props.height = size;
 }
-
 
 // Download only on production to avoid downloading multiple times
 if (process.env.NODE_ENV === "production" && !url.startsWith("/")) {
     try {
         const response = await fetch(url);
-        console.log(response.headers);
         const blob = await response.blob();
         fs.mkdirSync("public/assets/preloaded", { recursive: true });
-        fs.writeFileSync(`public/assets/preloaded/${name}`, new Uint8Array(await blob.arrayBuffer()));
-        console.log(`[astro-preload]: Downloaded image ${name} into public/assets/preloaded/${name}`);
+        fs.writeFileSync(
+            `public/assets/preloaded/${name}`,
+            new Uint8Array(await blob.arrayBuffer())
+        );
+        console.log(
+            `[astro-preload]: Downloaded image ${name} into public/assets/preloaded/${name}`
+        );
         url = `assets/preloaded/${name}`;
     } catch {
-        console.log(`[astro-preload]: Failed to load image '${name}', fallback to using '${url}'`);
+        console.log(
+            `[astro-preload]: Failed to load image '${name}', fallback to using '${url}'`
+        );
     }
 }
 ---
 
-<img {...props} src={url} alt={alt}>
+<img {...props} src={url} alt={alt} />

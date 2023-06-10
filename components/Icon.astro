@@ -1,24 +1,24 @@
 ---
-import Image from './Image.astro';
+import Image from "./Image.astro";
 /**
  * Props of the Icon component.
  */
 export type Props = Omit<astroHTML.JSX.ImgHTMLAttributes, "src" | "name"> & {
-    /** 
+    /**
      * Name of the icon.
-     * 
+     *
      * Possible formats:
      * - `name="<pack>:<name>"`
      * - `name="<name>" pack="<pack>"`
-     * 
+     *
      * The icon will be saved in `public/assets/preloaded/<pack>_<name>.svg`.
-     * 
+     *
      * # Examples
      * Using only name:
      * ```
      * <Icon name="mdi:github" />
      * ```
-     * 
+     *
      * Using both name and pack:
      * ```
      * <Icon name="github" pack="mdi" />
@@ -27,9 +27,9 @@ export type Props = Omit<astroHTML.JSX.ImgHTMLAttributes, "src" | "name"> & {
     name: string;
     /**
      * Pack of the icon.
-     * 
+     *
      * Can be omitted if `name` is provided with the `"<pack>:<name>"` format.
-     * 
+     *
      * # Examples
      * ```
      * <Icon name="github" pack="mdi" />
@@ -41,34 +41,42 @@ export type Props = Omit<astroHTML.JSX.ImgHTMLAttributes, "src" | "name"> & {
      */
     size?: number;
     /** URL of the icon.
-     * 
+     *
      *  If specified, the URL will be used instead of `iconify.design`.
-     * 
+     *
      *  Must be a `.svg` file. Use the `Image` component if you want another format.
-     * 
+     *
      * `<pack>` and `<name>` will be replaced by the respective props.
-     * 
+     *
      *  @defaultValue `https://api.iconify.design/<pack>/<name>.svg`
-     * 
+     *
      * # Example
      * ```
      * <Icon name="mdi:github" url="https://api.simplesvg.com/<pack>/<name>.svg"/>
      * ```
-    */
+     */
     url?: string;
 };
 
-let { name, pack, size = 24, url = `https://api.iconify.design/<pack>/<name>.svg`, ...props } = Astro.props;
+let {
+    name,
+    pack,
+    size = 24,
+    url = "https://api.iconify.design/<pack>/<name>.svg",
+    alt = "Icon could not be loaded",
+    ...props
+} = Astro.props;
+
 if (!pack) {
     const sep = name.indexOf(":");
-    if (sep === -1) throw "Invalid icon name, expected format `name=\"<pack>:<name>\"`";
-    pack = name.substring(0, sep)
-    name = name.substring(sep+1)    
+    if (sep === -1)
+        throw 'Invalid icon name, expected format `name="<pack>:<name>"`';
+    pack = name.substring(0, sep);
+    name = name.substring(sep + 1);
 }
 
 props.width = props.height = size;
 url = url.replace("<pack>", pack).replace("<name>", name);
-props.alt = props.alt || "Icon could not be loaded";
 ---
 
-<Image {...props} name={`${pack}:${name}`} url={url} />
+<Image {...props} name={`${pack}:${name}.svg`} url={url} alt={alt} />
