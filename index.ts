@@ -8,7 +8,7 @@ export default function preload(): AstroIntegration {
         name: PKG_NAME,
         hooks: {
             "astro:build:done": async () => {
-                console.log(await fs.readdir("."));
+                await fs.mkdir("dist/assets/preloaded", { recursive: true });
                 const files = await fs.readdir("public/assets/preloaded");
                 await Promise.all(files.map(async file => fs.copyFile(`public/assets/preloaded/${file}`, `dist/assets/preloaded/${file}`, fs.constants.COPYFILE_EXCL)));
             }
