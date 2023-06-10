@@ -49,7 +49,7 @@ Get image from arbitrary URL:
 import { Image } from "astro-preload/components";
 ---
 <!-- Automatically fetches and downloads image -->
-<Image name="cat.png" url="https://examplecat.com/cat.png" />
+<Image url="https://examplecat.com/cat.png" />
 ```
 
 ## API
