@@ -70,7 +70,7 @@ if (process.env.NODE_ENV === "production" && !url.startsWith("/")) {
         console.log(
             `[astro-preload]: Downloaded image ${name} into public/assets/preloaded/${name}`
         );
-        url = `assets/preloaded/${name}`;
+        url = import.meta.env.BASE_URL + `assets/preloaded/${name}`;
     } catch {
         console.log(
             `[astro-preload]: Failed to load image '${name}', fallback to using '${url}'`
