@@ -1,4 +1,4 @@
-import { AstroIntegration } from "astro";
+import type { AstroIntegration } from "astro";
 import fs from "fs/promises";
 
 const PKG_NAME = "astro-preload";
