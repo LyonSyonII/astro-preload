@@ -75,7 +75,7 @@ if (process.env.NODE_ENV === "production" && !url.startsWith("/")) {
                 new Uint8Array(await blob.arrayBuffer())
             );
             console.log(
-                `[astro-preload]: Downloaded image ${name} into public/assets/preloaded/${name}`
+                `[astro-preload]: Downloaded image ${name} into ${path}`
             );
         }
 
