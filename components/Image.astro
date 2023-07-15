@@ -60,16 +60,25 @@ if (!props.width && !props.height) {
 // Download only on production to avoid downloading multiple times
 if (process.env.NODE_ENV === "production" && !url.startsWith("/")) {
     try {
-        const response = await fetch(url);
-        const blob = await response.blob();
-        fs.mkdirSync("public/assets/preloaded", { recursive: true });
-        fs.writeFileSync(
-            `public/assets/preloaded/${name}`,
-            new Uint8Array(await blob.arrayBuffer())
-        );
-        console.log(
-            `[astro-preload]: Downloaded image ${name} into public/assets/preloaded/${name}`
-        );
+        const preloadDir = "public/assets/preloaded";
+        const path = `${preloadDir}/${name}`;
+
+        if (!fs.existsSync(path)) {
+            if (!fs.existsSync(preloadDir)){
+                fs.mkdirSync(preloadDir, { recursive: true });
+            }
+            const response = await fetch(url);
+            const blob = await response.blob();
+
+            fs.writeFileSync(
+                path,
+                new Uint8Array(await blob.arrayBuffer())
+            );
+            console.log(
+                `[astro-preload]: Downloaded image ${name} into ${path}`
+            );
+        }
+
         url = import.meta.env.BASE_URL + `assets/preloaded/${name}`;
     } catch {
         console.log(
