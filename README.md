@@ -60,7 +60,7 @@ The **Icon** component accepts the following props:
 - `url`: The URL of the icon. Overrides default Iconify URL.
 
 The **Image** component accepts the following props:
-- `name`: The name of the image. If not provided it will try to inferred from the url.
+- `name`: The name of the downloaded image. If not provided it will try to be inferred from the url.
 - `url`: The URL of the image.
 - `size`: The size of the image. Applied to both `width` and `height`.
 
