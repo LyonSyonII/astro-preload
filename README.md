@@ -11,7 +11,7 @@ Can be useful in combination with tools like [astro-compress](https://github.com
 
 ## Install
 ```bash
-npm run astro install astro-preload
+npx astro add astro-preload
 # or
 yarn astro add astro-preload
 ```
