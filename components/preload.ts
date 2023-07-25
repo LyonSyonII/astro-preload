@@ -29,7 +29,7 @@ export interface PreloadOptions {
      * By default the preloaded name will be ${fileNameWithoutExtension}-${shorthashOfFile}.${extension}
      * This can be overriden with this property
      */
-    overrideName?: string
+    overrideName?: string | undefined
 
 }
 

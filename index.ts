@@ -1,4 +1,6 @@
 import type { AstroIntegration } from "astro";
+import { cpSync, rmSync } from "fs";
+import { join } from "path";
 
 const PKG_NAME = "astro-preload";
 
@@ -30,15 +32,18 @@ let pluginConfig: {
     publicDir: string,
     base: string,
     site?: string | undefined,
-    outDir: URL
+    outDir: string
 } | undefined
 
+interface Config {
+    reuseGenerated?: boolean | undefined
+}
 
-export default function makePlugin(): AstroIntegration {
+
+export default function makePlugin(config?: Config): AstroIntegration {
     return {
         name: PKG_NAME,
         hooks: {
-            // The astro:build:done Hook is not needed because the public-Folder gets simply copied over into dist anyways
             // Taken from starlight (compare with https://github.com/withastro/starlight/blob/main/packages/starlight/index.ts#L42-L57)
             "astro:config:setup": ({config, updateConfig}) => {
                 const vitePlugins = config?.vite?.plugins ?? []
@@ -48,7 +53,7 @@ export default function makePlugin(): AstroIntegration {
                     publicDir: config.publicDir.toString().replace(pubDir.protocol+"//", ""),
                     base: config.base,
                     site: config.site,
-                    outDir: config.outDir
+                    outDir: config.outDir.toString().replace(pubDir.protocol+"//", "")
                 }
 
                 console.log(pluginConfig)
@@ -63,7 +68,29 @@ export default function makePlugin(): AstroIntegration {
                     vite: viteConfig
                 })
                 
-            }
+            },
+            "astro:build:setup": () => {
+                // Delete the generated folder in the public dir (if it exists). This is done to avoid "zombie" files accumulating
+                // If this is not desired, this step can be skipped by passing { reuseGenerated: true } to the integration's config
+                if(config?.reuseGenerated) {
+                    return
+                }
+
+                if(!pluginConfig) {
+                    throw new Error("Plugin Config not initialized")
+                }
+                const dirToDelete = join(pluginConfig.publicDir, "assets", "preloaded")
+                rmSync(dirToDelete, {recursive: true, force: true})
+            },
+            "astro:build:done": () => {
+                // This hook is only needed if new images got added in the current build because analyzing which
+                // files need to be moved happens *before* the rendering step - so images that got added in the
+                // current build step need to be moved additionally
+                if(!pluginConfig) {
+                    throw new Error("Plugin Config not initialized")
+                }
+                cpSync(join(pluginConfig.publicDir, "assets", "preloaded"), join(pluginConfig.outDir, "assets", "preloaded"), {recursive: true, force: true})
+            },
         }
     };
 }
