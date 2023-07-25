@@ -37,7 +37,6 @@ let PUBLIC_DIRECTORYNAME = publicDir
 if(PUBLIC_DIRECTORYNAME.endsWith("/")) {
     PUBLIC_DIRECTORYNAME = PUBLIC_DIRECTORYNAME.slice(0, -1)
 }
-console.log(">>"+PUBLIC_DIRECTORYNAME)
 const PRELOAD_PATH_SEGMENT = `/assets/preloaded/`
 const PRELOAD_DIRECTORY = PUBLIC_DIRECTORYNAME+PRELOAD_PATH_SEGMENT
 
@@ -62,8 +61,6 @@ function interpretFileEnding(mimeType: string | null ,fallback: string | undefin
 }
 
 export default async function preload( url: string | URL , opts?: PreloadOptions) : Promise<string> {
-
-    console.log(base, publicDir)
 
     // If not in Prod, and if a local image, skip
     if(process.env.NODE_ENV !== "production" || url.toString().startsWith("/")) {
