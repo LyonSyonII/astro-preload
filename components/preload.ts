@@ -97,9 +97,29 @@ export default async function preload( url: string | URL , opts?: PreloadOptions
                 host = opts.site
             }
         }
-        if(host.endsWith("/")) {
-            host = host.substring(0, -1)
+        // example.com | example.com/
+        if(!host.endsWith("/")) {
+            host+="/"
         }
+        // example.com/
+        if(base) {
+            // /path/ | /path | path | path/
+            let baseTemp = base
+            if(base.startsWith("/")) {
+                baseTemp = baseTemp.slice(1)
+            }
+            // path/ | path
+            if(!base.endsWith("/")) {
+                baseTemp += "/"
+            }
+            // path/
+            host+=baseTemp
+        }
+        // example.com/path/
+        host = host.slice(0, -1)
+        // example.com/path
+
+
         
         const serverFilePath = `${host}${PRELOAD_PATH_SEGMENT}${fileName}`
 

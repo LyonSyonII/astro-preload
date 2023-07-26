@@ -21,7 +21,6 @@ function makeVitePlugin(config: {publicDir: string, base: string}) {
         load(id: string) : string | void {
             if(id === "\0virtual:astro-preload") {
                 const moduleContent = Object.entries(config).map( ([k,v]) => `export const ${k} = ${JSON.stringify(v)}`).join("\n")
-                console.log(moduleContent)
                 return moduleContent
             }
         }
@@ -48,7 +47,6 @@ export default function makePlugin(config?: Config): AstroIntegration {
             "astro:config:setup": ({config, updateConfig}) => {
                 const vitePlugins = config?.vite?.plugins ?? []
                 const pubDir = config.publicDir
-                console.log(pubDir.protocol)
                 pluginConfig = {
                     publicDir: config.publicDir.toString().replace(pubDir.protocol+"//", ""),
                     base: config.base,
@@ -56,7 +54,6 @@ export default function makePlugin(config?: Config): AstroIntegration {
                     outDir: config.outDir.toString().replace(pubDir.protocol+"//", "")
                 }
 
-                console.log(pluginConfig)
 
                 vitePlugins.push(makeVitePlugin(pluginConfig))
                 

@@ -67,6 +67,10 @@ const result = await preload(url, {
     overrideName: props.name
 })
 
+props.src = result;
+delete props.url;
+delete props.size;
+
 ---
 
-<img {...props} src={result} />
+<img {...props} />
