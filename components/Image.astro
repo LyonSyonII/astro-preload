@@ -1,5 +1,5 @@
 ---
-import fs from "fs";
+import preload from "./preload";
 
 /**
  * Props of the Image component.
@@ -10,7 +10,7 @@ export type Props = Omit<astroHTML.JSX.ImgHTMLAttributes, "src" | "name"> & {
      *
      * This will be the name of the resulting file, so include it with extension if you want to access it later.
      * 
-     * If not provided astro-preload will try to infer it from the URL.
+     * If not provided astro-preload will use the file's hash as the name.
      *
      * # Example
      *
@@ -20,10 +20,12 @@ export type Props = Omit<astroHTML.JSX.ImgHTMLAttributes, "src" | "name"> & {
      */
     name?: string;
     /**
-     * Size of the image, will be applied to width and height.
-     * @defaultValue 96
+     * Size of the Image in px. This is a shorthand for setting both the width and height props.
+     * 
+     * It is recommended to be set, as this will prevent layout shifts caused by loading in images.
+     * 
      */
-    size?: number;
+    size?: number
     /**
      * URL of the image.
      *
@@ -38,54 +40,37 @@ export type Props = Omit<astroHTML.JSX.ImgHTMLAttributes, "src" | "name"> & {
      * <Image name="cat.png" url="https://examplecat.com/cat.png" width={64} />
      * ```
      */
-    url: string;
+    url?: string;
+    /**
+     * Alias for url to mirror the img-Element; 
+     * 
+     * either src or url needs to be set. If both are set, url takes precedence
+     */
+    src?: string
 };
 
-let {
-    url,
-    name = new URL(url).pathname.split("/").pop(),
-    size = 96,
-    alt = "Image could not be loaded",
-    ...props
-}: Props = Astro.props;
+const props = Astro.props;
 
-if (!name) {
-    throw `[astro-preload] name not provided and cannot be extracted from the url ${url}.\nPlease, provide a name.`;
+const url = props.url ?? props.src
+
+if(!url) {
+    throw new Error("[astro-preload] Image marked for preloading is missing a source (add either a src or url prop)")
 }
 
-if (!props.width && !props.height) {
-    props.width = props.height = size;
+
+if(props.size) {
+    props.width ??= props.size;
+    props.height ??= props.height;
 }
 
-// Download only on production to avoid downloading multiple times
-if (process.env.NODE_ENV === "production" && !url.startsWith("/")) {
-    try {
-        const preloadDir = "public/assets/preloaded";
-        const path = `${preloadDir}/${name}`;
+const result = await preload(url, {
+    overrideName: props.name
+})
 
-        if (!fs.existsSync(path)) {
-            if (!fs.existsSync(preloadDir)){
-                fs.mkdirSync(preloadDir, { recursive: true });
-            }
-            const response = await fetch(url);
-            const blob = await response.blob();
+props.src = result;
+delete props.url;
+delete props.size;
 
-            fs.writeFileSync(
-                path,
-                new Uint8Array(await blob.arrayBuffer())
-            );
-            console.log(
-                `[astro-preload]: Downloaded image ${name} into ${path}`
-            );
-        }
-
-        url = import.meta.env.BASE_URL + `assets/preloaded/${name}`;
-    } catch {
-        console.log(
-            `[astro-preload]: Failed to load image '${name}', fallback to using '${url}'`
-        );
-    }
-}
 ---
 
-<img {...props} src={url} alt={alt} />
+<img {...props} />

@@ -5,7 +5,9 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./components": "./components/index.ts"
+    "./components": "./components/index.ts",
+    "./components/Icon.astro": "./components/Icon.astro",
+    "./components/Image.astro": "./components/Image"
   },
   "files": [
     "components",
