@@ -6,7 +6,7 @@
  */
 
 import { createHash } from "crypto"
-import { existsSync } from "fs"
+import { existsSync, stat } from "fs"
 import { mkdir, writeFile } from "fs/promises"
 import { join } from "path"
 
@@ -26,10 +26,26 @@ export interface PreloadOptions {
     site?: string | true
 
     /**
-     * By default the preloaded name will be ${fileNameWithoutExtension}-${shorthashOfFile}.${extension}
+     * By default the preloaded name will be ${shorthashOfUrl}.${extension}
      * This can be overriden with this property
+     * 
+     * **WARNING**: It is your responsibility to make sure there are no collisions in the name.
      */
-    overrideName?: string | undefined
+    overrideName?: string | undefined,
+
+    /**
+     * Do not look up the preload-Directory for already existing files
+     */
+    skipCache?: true,
+
+    /**
+     * The tool will infer the file ending from the URL. 
+     * In some cases however this is not possible (e.g. URL does not end with file ending), 
+     * or not desirable (think: conversion of images). Use this option to define the File Ending.
+     */
+    overrideFileEnding?: string
+
+
 
 }
 
@@ -40,61 +56,109 @@ if(PUBLIC_DIRECTORYNAME.endsWith("/")) {
 const PRELOAD_PATH_SEGMENT = `/assets/preloaded/`
 const PRELOAD_DIRECTORY = PUBLIC_DIRECTORYNAME+PRELOAD_PATH_SEGMENT
 
-function interpretFileEnding(mimeType: string | null ,fallback: string | undefined ) {
-    if (mimeType) {
-        switch(mimeType.trim()) {
-            // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
-            case "image/avif" : return ".avif";
-            case "image/bmp" : return ".bmp";
-            case "image/gif" : return ".gif";
-            case "image/jpeg" : return ".jpeg";
-            case "image/png" : return ".png";
-            case "image/svg+xml" : return ".svg";
-            case "image/tiff" : return ".tiff";
-            case "image/webp" : return ".webp";
-        }
+
+
+
+function getHashedFileName(url: string | URL, fileEndingOverride?: string | undefined, fileNameOverride?: string | undefined) {
+    url = url.toString()
+    const lastsegment = url.split("/").pop() ?? url
+    const splitFile = lastsegment.split(".")
+    const fileEnding = fileEndingOverride ?? splitFile[splitFile.length - 1];
+    if(!fileEnding) {
+        throw new Error("You must provide a File Ending Override for the URL "+url+" because the file ending could not be inferred from the URL")
     }
-    if(!fallback) {
-        return ""
+    const fileWithoutEnding = splitFile.length === 1 ? splitFile[0] : splitFile.slice(0, -1).join(".")
+    
+
+    const hash = createHash("md5").update(url).digest("hex")
+
+    if(fileNameOverride) {
+        return `${fileNameOverride}.${fileEnding}`
     }
-    return "."+fallback
+
+    return `${fileWithoutEnding}-${hash}.${fileEnding}`
+
+
 }
 
-export default async function preload( url: string | URL , opts?: PreloadOptions) : Promise<string> {
 
-    // If not in Prod, and if a local image, skip
-    if(process.env.NODE_ENV !== "production" || url.toString().startsWith("/")) {
-        return url.toString()
-    }
+interface PreloadFetchOpts {
+    /**
+     * Set this to true to skip checking if a file with that name already exists. 
+     * **WARNING**: it is your responsibility to make sure that file names are unique.   
+     */
+    skipCache?: true
 
-    try {
-        // Create preload directory if it does not exist yet
-        if(!existsSync(PRELOAD_DIRECTORY)) {
-            await mkdir(PRELOAD_DIRECTORY, { recursive: true })
-        }
+    /**
+     * Defines whats "left" of the path. This can be relevant if you intent to preload images for Opengraph.
+     * You may also pass "true" here. In this case, the value defined in the Astro Config File gets used here
+     * 
+     * @example "https://example.com"
+     * @example "https://example.com/some/base/path"
+     * @example true
+     * 
+     */
+    site?: string | true
+}
 
-        const response = await fetch(url);
-        const fileEnding = interpretFileEnding(response.headers.get("content-type"), (url.toString().split("/").pop()??"").split(".").pop())
 
+/**
+ * Use this Method if you wish to use any arbitrary fetch-Invocation to obtain an image.
+ * This is used internally to GET images, but may also be used to, for example, send data via POST to a 
+ * local server to generate Thumbnails. Note that this method expects you explicitly set the entire file name. 
+ * 
+ * Note that while this is intended for Images, nothing stops you from preloading anything else here. Just make sure that
+ * the file ending makes sense.
+ * 
+ * Also do note that this 
+ * 
+ * @param fetchCall A fetch invocation that is expected to return a Buffer Payload. Note that this will not be executed if caching is desired and a file with the given name exists!
+ * @param entireFileName The Filename, excluding the path to the preload-Directory. example: `image-123.webp`
+ */
+export async function preloadFetch(fetchCall: () => Promise<Response>, entireFileName: string, opts: PreloadFetchOpts) {
+    const fileAlreadyExits = await new Promise<boolean>( res => {
+        stat(`${PUBLIC_DIRECTORYNAME}${PRELOAD_PATH_SEGMENT}${entireFileName}`, (err) => {
+            res(err === null)
+        })
+    } )
+
+    if(opts.skipCache || !fileAlreadyExits) {
+        // File does not yet exist. 
+        // We will invoke the fetch, store the result under $preloadDir/$entireFileName
+        const response = await fetchCall()
+        
         if(!response.body) {
             throw new Error("The Server responded with an empty body. As a result no file can be preloaded.")
         }
 
-        
         const responseBuffer = new Uint8Array(await (await response.blob()).arrayBuffer())
         if(!responseBuffer) {
             throw new Error("Response Buffer is empty!")
         }
-        const hash = createHash("md5").update(responseBuffer).digest("hex")
 
-        const fileName = opts?.overrideName ?? `${hash}${fileEnding}`
+        await writeFile(join(PRELOAD_DIRECTORY, entireFileName), responseBuffer)
+        // The file is now stored in the preload dir
+        console.log(
+            `[astro-preload]: Downloaded image to ${PUBLIC_DIRECTORYNAME}${PRELOAD_PATH_SEGMENT}${entireFileName}`
+        );
+    } else {
+        console.log(
+            `[astro-preload]: Retrieved ${entireFileName} from cache`
+        );
+    }
 
-        let host = ""
-        if(opts?.site) {
-            if(opts.site === true) {
+    const serverFilePath = `${determineHost(opts.site)}${PRELOAD_PATH_SEGMENT}${entireFileName}`
+    return serverFilePath
+}
+
+
+function determineHost(siteOverride?: string | boolean) {
+    let host = ""
+        if(siteOverride) {
+            if(siteOverride === true) {
                 host = site
             } else {
-                host = opts.site
+                host = siteOverride
             }
         }
         // example.com | example.com/
@@ -118,16 +182,27 @@ export default async function preload( url: string | URL , opts?: PreloadOptions
         // example.com/path/
         host = host.slice(0, -1)
         // example.com/path
+        return host;
+}
 
 
-        
-        const serverFilePath = `${host}${PRELOAD_PATH_SEGMENT}${fileName}`
+export default async function preload( url: string | URL , opts?: PreloadOptions) : Promise<string> {
 
-        await writeFile(join(PRELOAD_DIRECTORY, fileName), responseBuffer)    
-        console.log(
-            `[astro-preload]: Downloaded image to ${PUBLIC_DIRECTORYNAME}${PRELOAD_PATH_SEGMENT}${fileName}`
-            );
-        return serverFilePath;
+    // If not in Prod, and if a local image, skip
+    if(process.env.NODE_ENV !== "production" || url.toString().startsWith("/")) {
+        return url.toString()
+    }
+
+    try {
+        // Create preload directory if it does not exist yet
+        if(!existsSync(PRELOAD_DIRECTORY)) {
+            await mkdir(PRELOAD_DIRECTORY, { recursive: true })
+        }
+
+        const fileToLookUp = getHashedFileName(url, opts?.overrideFileEnding, opts?.overrideName)
+
+        return await preloadFetch(() => fetch(url),fileToLookUp, opts ?? {})
+
     }
     catch(err) {
         console.log(
@@ -135,7 +210,4 @@ export default async function preload( url: string | URL , opts?: PreloadOptions
         );
         return url.toString()
     }
-
-
 }
-
